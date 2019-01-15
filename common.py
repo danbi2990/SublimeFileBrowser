@@ -7,6 +7,7 @@ import re, os, fnmatch, sys, itertools
 import sublime
 from sublime import Region
 from os.path import isdir, join, basename
+import unicodedata
 
 try:  # unavailable dependencies shall not break basic functionality
     import package_events
@@ -404,6 +405,9 @@ class DiredBaseCommand:
         )
         self.view.set_status("__FileBrowser__", status)
 
+    def _normalize_items(self, items):
+        return [unicodedata.normalize('NFC', i) for i in items]
+
     def prepare_filelist(self, names, path, goto, indent):
         '''About self.index see DiredRefreshCommand
         could be called from  DiredExpand.expand_single_folder
@@ -429,7 +433,7 @@ class DiredBaseCommand:
         index = index_dirs + index_files
         self.index = self.index[:self.number_line] + index + self.index[self.number_line:]
         items += files
-        return items
+        return self._normalize_items(items)
 
     def is_hidden(self, filename, path, goto=''):
         if not (path or goto):  # special case for ThisPC
@@ -470,7 +474,7 @@ class DiredBaseCommand:
         else:
             sort_nicely(items)
         finally:
-            return items, error
+            return self._normalize_items(items), error
 
     def try_listing_only_dirs(self, path):
         '''Same as self.try_listing_directory, but items contains only directories.
@@ -478,7 +482,7 @@ class DiredBaseCommand:
         items, error = self.try_listing_directory(path)
         if items:
             items = [n for n in items if isdir(join(path, n))]
-        return (items, error)
+        return (self._normalize_items(items), error)
 
     def restore_marks(self, marked=None):
         if marked:

@@ -498,9 +498,9 @@ class DiredExpand(TextCommand, DiredBaseCommand):
         self.index = self.get_all()
         filenames = self.get_marked(full=True) or self.get_selected(parent=False, full=True)
 
-        if len(filenames) == 1 and filenames[0][~0] == os.sep:
+        if len(filenames) == 1 and filenames[0][~0] == os.sep and isdir(filenames[0]):
             return self.expand_single_directory(edit, filenames[0], toggle)
-        elif filenames:
+        elif filenames and len(filenames) >= 2:
             # working with several selections at once is very tricky, thus for reliability we should
             # recreate the entire tree, despite it is supposedly slower, but not really, because
             # one view.replace/insert() call is faster than multiple ones
